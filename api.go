@@ -1,9 +1,8 @@
-package main
+package api
 
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -24,7 +23,7 @@ type Address struct {
 	Postcode string `json:"postcode,omitempty"`
 }
 
-// businesses to hold mock data
+// businesses - slice to hold mock data
 var businesses []Business
 
 // GetBusinessEndpoint fetches business
@@ -61,13 +60,18 @@ func CreateBusinessEndpoint(w http.ResponseWriter, req *http.Request) {
 	fmt.Println(business)
 }
 
-func main() {
+// RenderHome root handler
+func RenderHome(w http.ResponseWriter, req *http.Request) {
+	fmt.Fprint(w, "Welcome")
+}
+
+func init() {
 	router := mux.NewRouter()
 	businesses = append(businesses, Business{ID: "1", Name: "Flour Bakery", Address: &Address{Street: "123 Church Street", City: "London"}})
 	businesses = append(businesses, Business{ID: "2", Name: "Milk and Honey", Address: &Address{Street: "24 Shoreditch High Street", City: "London"}})
+	http.Handle("/", router) // Pass route handling to router
+	router.HandleFunc("/", RenderHome).Methods("GET")
 	router.HandleFunc("/businesses", GetBusinessesEndpoint).Methods("GET")
 	router.HandleFunc("/businesses", CreateBusinessEndpoint).Methods("POST")
 	router.HandleFunc("/business/{id}", GetBusinessEndpoint).Methods("GET")
-
-	log.Fatal(http.ListenAndServe(":12345", router))
 }
